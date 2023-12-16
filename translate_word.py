@@ -1,11 +1,10 @@
 import os
-from tester import *
+from helper import *
 from autocorrect import *
 import tensorflow as tf
 
-def import_word_testing_data(word_folder, pmodel, wDict):
+def predict_word_testing_data(word_folder, pmodel, wDict, outfile):
     
-    blob_accs = 0
     sym_accs = 0
     base_accs = 0
     total = 0
@@ -22,7 +21,6 @@ def import_word_testing_data(word_folder, pmodel, wDict):
         print("Predicting: " + word)
         correct = 0
         uncorrect = 0
-        blobCorrect = 0
         
         for trial in trials:
             guess = ""
@@ -35,41 +33,59 @@ def import_word_testing_data(word_folder, pmodel, wDict):
                 guess += predict(full_path_letter, pmodel)
             uncorrected = guess.lower()
             corrected = symCheckWord(guess.lower(), wDict)
-            blob = blobCheckWord(guess.lower())
             
             # print(corrected)
             if uncorrected == word:
                 uncorrect += 1
             if corrected == word:
                 correct += 1
-            if blob == word:
-                blobCorrect += 1
         
-        print("Sym corrected accuracy for " + word + ":", correct / 100)
-        print("Blob corrected accuracy for " + word + ":", blobCorrect / 100)
-        print("Uncorrected accuracy for " + word + ":", uncorrect / 100)
+        lines = [("Sym corrected accuracy for " + word + ": " + str(correct / 50) + "\n"),
+                 ("Uncorrected accuracy for " + word + ": " + str(uncorrect / 50) + "\n")
+                ]
+        outfile.writelines(lines)
         
-        blob_accs += blobCorrect
         sym_accs += correct
         base_accs += uncorrect
-        total += 100
-    return blob_accs / total, sym_accs / total, base_accs / total
+        total += 50
+    return sym_accs / total, base_accs / total
         
-        
+# this code predicts a single word  
+# should pass it a probability model
+#input should be a folder with an image of each letter in the form <letter><0 indexed position in word>.png
+# for example hi: h0.png, i1.png
+def predict_word(pmodel, word_folder):
+    wDict = SymSpell()
+    guess = ""
+    letters = os.listdir(word_folder)
+    if ".DS_Store" in letters: letters.remove(".DS_Store")
+    letters.sort(key=(lambda e: int(e[1])))
+    for letter in letters:
+        letter_path = os.path.join(word_folder, letter)
+        guess += predict(letter_path, pmodel)
+    return symCheckWord(guess.lower(), wDict)
+    
+    
                 
             
-
+# this code runs word results check
 def main():
-    xtrain, ytrain = import_data("asl_alphabet_train_skin", 0.0, 0.8)
-    model = fit(xtrain, ytrain, n_epochs = 10, prob=True, verbosity=0)
-    # prob_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
-    # wordDict = fileToDict("freq.csv")
-    spellCheck = SymSpell()
-    spellCheck.load_dictionary("freq.txt", 0, 1, " ")
-    b, s, n = import_word_testing_data("words_skin", model, spellCheck)
-    print("Blob Acc: ", b)
-    print("Sym Acc: ", s)
-    print("Base Acc: ", n)
+    
+    xtrain, ytrain = import_data("datasets/train/", 0, 1)
+    xstrain, ystrain = import_data("datasets/synth_train/", 0, 1)
+    xtrain.extend(xstrain)
+    ytrain.extend(ystrain)
+    xtrain = np.array(xtrain)
+    ytrain = np.array(ytrain)
+    model = fit_best_model(xtrain, ytrain, prob=True, n_epochs=1)
+    print(predict_word(model, "word_test/above/0/"))
+    # spellCheck = SymSpell() # default max edit dist = 2
+    # spellCheck.load_dictionary("freq.txt", 0, 1, " ")
+    # f = open("TranslateResults.txt", "a")
+    # s, n = predict_word_testing_data("word_validation", model, spellCheck, f)
+    # f.close()
+    # print("Sym Acc: ", s)
+    # print("Base Acc: ", n)
     
 
 if __name__ == "__main__":

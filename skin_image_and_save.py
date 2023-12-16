@@ -48,7 +48,12 @@ key_to_color = {
 }
 
 def skin_file(filepath, new_filepath, start, end, palm=False): # file should contain directories A, B ...
-
+    try:
+        os.mkdir(new_filepath, mode = 0o777)
+        os.mkdir(os.path.join(new_filepath, "none"), mode = 0o777)
+        
+    except:
+        pass
     letters = sorted(os.listdir(filepath))
     if ".DS_Store" in letters: letters.remove(".DS_Store")
     for letter in letters:
@@ -109,7 +114,7 @@ def skin(image, edit, palm=False):
 def main():
     
     # ANCHOR import data
-    skin_file("Train_Alphabet", "syth-train", 0, 1, palm=False)
+    skin_file("ablation_nonpreproc", "datasets/ablation", 0, 1, palm=False)
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,11 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-from tester import *
-cap = cv2.VideoCapture(0)
+from helper import *
+
 mpHands = mp.solutions.hands
 hands = mpHands.Hands()
-mpDraw = mp.solutions.drawing_utils
+# mpDraw = mp.solutions.drawing_utils
 
 pairs = [[0, 1, "h"], [1, 2, "h"], [2, 3, "t"], [3, 4, "t"], [2, 5, "h"], [5,6, "i"], [6, 7, "i"], [7,8, "i"], [5, 9, "h"], [9, 10, "m"], [10, 11, "m"], [11, 12, "m"], [9,13, "h"], [13, 14, "r"], [14, 15, "r"], [15, 16, "r"], [13, 17, "h"], [17, 18, "p"], [18, 19, "p"], [19, 20, "p"], [17, 0, "h"]]
 tips = [4, 8, 12, 16, 20]
@@ -64,6 +64,9 @@ def skin(image, edit):
     else: return None
 
 def video(fit_model):
+    cap = cv2.VideoCapture(0)
+    mpHands = mp.solutions.hands
+    hands = mpHands.Hands()
     crop = None
     # adj = 0
     while True:
@@ -129,7 +132,7 @@ def video(fit_model):
                     
                     # ignore double letters for now
                     
-                    print(display_prediction(fit_model.predict(np.array([skinned]))[0]), end="", flush=True)
+                    print(img_predict(skinned, fit_model), end="", flush=True)
 
         cv2.imshow("Output", cv2.flip(relay, 1))
 
@@ -138,7 +141,7 @@ def video(fit_model):
         
 def main():
     xtrain, ytrain = import_data("asl_alphabet_train_skin", 0.0, 0.8)
-    model = fit(xtrain, ytrain, n_epochs=10, prob=True)
+    model = fit_best_model(xtrain, ytrain, n_epochs=10, prob=True)
     # model = ""
     video(model)
     

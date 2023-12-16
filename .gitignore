@@ -1,5 +1,7 @@
 datasets/*
 old/*
-Test_Alphabet/*
-Train_Alphabet/*
-words_skin/*
+word_test/*
+nop_datasets/*
+freq.txt
+.DS_Store
+*.DS_Store*

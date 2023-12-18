@@ -2,6 +2,8 @@
 
 all code can be run from main.py. See main method for thing that you are capabale of doing, note for the code to run you must have the proper data directories set up. 
 
+See ASL-Interpreter.pdf for writeup
+
 Some run commands: 
 
 python3 main.py: runs driver program over all evaluation sets
